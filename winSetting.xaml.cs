@@ -1,4 +1,5 @@
 ﻿using LinePutScript.Converter;
+using LinePutScript.Localization.WPF;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,7 +32,7 @@ namespace VPet.Plugin.MoreTTS
             SwitchOn.IsChecked = tts.Set.Enable;
             VolumeSilder.Value = tts.MW.Main.PlayVoiceVolume * 100;
             Speakers.Text = tts.Set.Speaker;
-            Language.Text = tts.Set.Language;
+            Languages.Text = tts.Set.Language;
             NoiseScaleSlider.Value = tts.Set.NoiseScale;
             NoiseScaleWSlider.Value = tts.Set.NoiseScale;
             LengthScaleSilder.Value = tts.Set.LengthScale;
@@ -47,16 +48,16 @@ namespace VPet.Plugin.MoreTTS
             if (tts.Set.Enable != SwitchOn.IsChecked.Value)
             {
                 if (SwitchOn.IsChecked.Value)
-                    tts.MW.Main.OnSay += tts.Main_OnSay;
+                    tts.MW.Main.OnSay += tts.MainOnSay;
                 else
-                    tts.MW.Main.OnSay -= tts.Main_OnSay;
+                    tts.MW.Main.OnSay -= tts.MainOnSay;
                 tts.Set.Enable = SwitchOn.IsChecked.Value;
             }
             tts.Set.Speaker = Speakers.Text;
             tts.Set.NoiseScale = NoiseScaleSlider.Value;
             tts.Set.NoiseScale = NoiseScaleWSlider.Value;
             tts.Set.LengthScale = LengthScaleSilder.Value;
-            tts.Set.Language = Language.Text;
+            tts.Set.Language = Languages.Text;
             tts.MW.Main.PlayVoiceVolume = VolumeSilder.Value / 100;
             tts.MW.Set.Remove("MoreTTS");
             tts.MW.Set.Add(LPSConvert.SerializeObject(tts.Set, "MoreTTS"));
@@ -65,8 +66,24 @@ namespace VPet.Plugin.MoreTTS
 
         private void Test_Click(object sender, RoutedEventArgs e)
         {
-            //tts.MW.Main.PlayVoiceVolume = VolumeSilder.Value / 100;
-            //tts.MW.Main.PlayVoice(Speakers.Text, "测试语音", tts.Set.NoiseScale, tts.Set.NoiseScale, tts.Set.LengthScale);
+            TestBtn.IsEnabled = false;
+            var text = TextSelector.Text;
+            var NoiseScale = NoiseScaleSlider.Value;
+            var NoiseScaleW = NoiseScaleWSlider.Value;
+            var LengthScale = LengthScaleSilder.Value;
+            var Speaker = Speakers.Text;
+            var Language = Languages.Text;
+            //tts.AssertMessage($"测试: {Language}_{Speaker}_{NoiseScale}_{NoiseScaleW}_{LengthScale}");
+            Task.Run(() =>
+            {
+                tts.MainOnSay_Parameter(text,
+                    Language,
+                    Speaker,
+                    NoiseScale,
+                    NoiseScaleW,
+                    LengthScale);
+                Dispatcher.Invoke(() => TestBtn.IsEnabled = true);
+            });
         }
     }
 }

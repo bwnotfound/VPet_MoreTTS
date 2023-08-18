@@ -44,9 +44,5 @@ namespace VPet.Plugin.MoreTTS
         [Line]
         public Double LengthScale { get; set; } = 1.1;
 
-        public String FormatString()
-        {
-            return $"{Speaker}_{Language}_{NoiseScale}_{NoiseScaleW}_{LengthScale}";
-        }
     }
 }

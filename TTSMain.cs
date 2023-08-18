@@ -15,11 +15,14 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Net;
+using System.Threading;
 
 namespace VPet.Plugin.MoreTTS
 {
     public class TTSMain : MainPlugin
     {
+        public string CacheDir = GraphCore.CachePath + @"\moretts_voice";
+        public string ttsUrl = "https://bwnotfound-vits-uma-genshin-honkai.hf.space";
         public Setting Set;
         public TTSMain(IMainWindow mainwin) : base(mainwin)
         {
@@ -36,10 +39,12 @@ namespace VPet.Plugin.MoreTTS
             {
                 Set = LPSConvert.DeserializeObject<Setting>(line);
             }
-            if (!Directory.Exists(GraphCore.CachePath + @"\moretts_voice"))
-                Directory.CreateDirectory(GraphCore.CachePath + @"\moretts_voice");
+            if (!Directory.Exists(CacheDir))
+                Directory.CreateDirectory(CacheDir);
             if (Set.Enable)
-                MW.Main.OnSay += Main_OnSay;
+            {
+                MW.Main.OnSay += MainOnSay;
+            }
 
             MenuItem modset = MW.Main.ToolBar.MenuMODConfig;
             modset.Visibility = Visibility.Visible;
@@ -52,29 +57,31 @@ namespace VPet.Plugin.MoreTTS
             modset.Items.Add(menuItem);
         }
 
-        public void Main_OnSay(string saythings)
+        public void MainOnSay_Parameter(string saythings, string Language,
+                                string Speaker, Double NoiseScale,
+                                Double NoiseScaleW, Double LengthScale)
         {//说话语音
-            var path = GraphCore.CachePath + $"\\moretts_voice\\{Sub.GetHashCode($"{Set.FormatString()}_{saythings}"):X}.mp3";
+            var path = CacheDir + $"\\{Sub.GetHashCode($"{Language}_{Speaker}_{NoiseScale}_{NoiseScaleW}_{LengthScale}_{saythings}"):X}.mp3";
             if (!File.Exists(path))
             {
                 JObject req_data = new JObject();
                 JArray data = new JArray
                 {
                     saythings,
-                    Set.Language,
-                    Set.Speaker,
-                    Set.NoiseScale,
-                    Set.NoiseScaleW,
-                    Set.LengthScale
+                    Language,
+                    Speaker,
+                    NoiseScale,
+                    NoiseScaleW,
+                    LengthScale,
                 };
                 req_data["data"] = data;
                 string sendData = JsonConvert.SerializeObject(req_data);
                 bool isSuccess = false;
-                for (int i = 0; i < 3 || !isSuccess; i++)
+                for (int i = 0; i < 3 && !isSuccess; i++)
                 {
                     try
                     {
-                        HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://ikechan8370-vits-uma-genshin-honkai.hf.space/api/generate");
+                        HttpWebRequest request = (HttpWebRequest)WebRequest.Create($"{ttsUrl}/api/generate");
                         byte[] buf = Encoding.GetEncoding("UTF-8").GetBytes(sendData);
                         request.Method = "POST";
                         request.ContentType = "application/json";
@@ -91,7 +98,7 @@ namespace VPet.Plugin.MoreTTS
                         reader.Close();
                         response.Close();
                         JObject res_data = JObject.Parse(res);
-                        string url = $"https://ikechan8370-vits-uma-genshin-honkai.hf.space/file={res_data["data"][1]["name"]}";
+                        string url = $"{ttsUrl}/file={res_data["data"][1]["name"]}";
                         WebClient webClient = new WebClient();
                         webClient.DownloadFile(url, path);
                         isSuccess = true;
@@ -104,18 +111,50 @@ namespace VPet.Plugin.MoreTTS
                 }
                 if (!isSuccess)
                 {
-                    throw new Exception("语音合成失败，请检查网络");
+                    AssertMessage("三次尝试生成语音失败，请重试或者排查网络原因等，也可能是bug");
                 }
-//#               // 将wav文件转换为mp3文件
-//                string mp3Path = path.Replace(".wav", ".mp3");
-//                string command = $"-i {path} -acodec libmp3lame -y {mp3Path}";
-//                System.Diagnostics.Process p = new System.Diagnostics.Process();
-//                p.StartInfo.FileName = "ffmpeg.exe";
+                //#               // 将wav文件转换为mp3文件
+                //                string mp3Path = path.Replace(".wav", ".mp3");
+                //                string command = $"-i {path} -acodec libmp3lame -y {mp3Path}";
+                //                System.Diagnostics.Process p = new System.Diagnostics.Process();
+                //                p.StartInfo.FileName = "ffmpeg.exe";
 
             }
             MW.Main.PlayVoice(new Uri(path));
         }
 
+        public void MainOnSay(string saythings)
+        {//说话语音
+            MainOnSay_Parameter(saythings,
+                Set.Language,
+                Set.Speaker,
+                Set.NoiseScale,
+                Set.NoiseScaleW,
+                Set.LengthScale);
+        }
+
+        public AssertWindow assertWindow;
+
+        public void AssertMessage(string message)
+        {
+            
+            if (assertWindow == null)
+            {
+                Thread thread = new Thread(() =>
+                {
+                    assertWindow = new AssertWindow(message, this);
+                    assertWindow.Show();
+                    System.Windows.Threading.Dispatcher.Run();
+                });
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+            }
+            else
+            {
+                assertWindow.Topmost = true;
+            }
+            
+        }
 
         public winSetting winSetting;
         public override void Setting()
@@ -130,6 +169,6 @@ namespace VPet.Plugin.MoreTTS
                 winSetting.Topmost = true;
             }
         }
-        public override string PluginName => "Atri";
+        public override string PluginName => "MoreTTS";
     }
 }

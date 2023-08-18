@@ -26,6 +26,7 @@
             <RowDefinition Height="40" />
             <RowDefinition Height="40" />
             <RowDefinition Height="40" />
+            <RowDefinition Height="40" />
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" Text="{ll:Str 启用}" VerticalAlignment="Center" />
         <TextBlock Grid.Row="1" Text="{ll:Str 音量}" VerticalAlignment="Center" />
@@ -34,38 +35,39 @@
         <TextBlock Grid.Row="4" Text="{ll:Str 'noise_scale(感情变化程度)'}" VerticalAlignment="Center" />
         <TextBlock Grid.Row="5" Text="{ll:Str 'noise_scale_w(控制音素发音长度)'}" VerticalAlignment="Center" />
         <TextBlock Grid.Row="6" Text="{ll:Str 'length_scale(控制整体语速)'}" VerticalAlignment="Center" />
+        <TextBlock Grid.Row="8" Text="{ll:Str '测试语音'}" VerticalAlignment="Center" />
 
         <pu:Switch x:Name="SwitchOn" BorderBrush="{DynamicResource DARKPrimaryDark}"
                 CheckedBackground="{DynamicResource DARKPrimary}" CheckedBorderBrush="{DynamicResource DARKPrimary}"
                 Background="Transparent" BoxWidth="35" BoxHeight="18" ToggleSize="14" ToggleShadowColor="{x:Null}"
                 ToggleBrush="{DynamicResource DARKPrimaryDark}" Content="{ll:Str 启用 MoreTTS}"
-                CheckedToggleBrush="{DynamicResource DARKPrimaryText}" Grid.Column="2" />
+                CheckedToggleBrush="{DynamicResource DARKPrimaryText}" Grid.Column="2" Grid.Row="0"/>
 
         <pu:NumberInput Grid.Row="1" Grid.Column="3" Minimum="0" MaxHeight="350" Margin="5"
-                Value="{Binding Value, ElementName=VolumeSilder}" CornerRadius="3" Maximum="100" />
+                Value="{Binding Value, ElementName=VolumeSilder, Mode=TwoWay}" CornerRadius="3" Maximum="100" />
         <Slider Grid.Row="1" Grid.Column="2" x:Name="VolumeSilder" Maximum="100" Value="100" VerticalAlignment="Center"
                 Background="{DynamicResource DARKPrimaryLighter}" LargeChange="10" SmallChange="2"
                 pu:SliderHelper.CoveredBackground="{DynamicResource DARKPrimaryDarker}" />
 
         <pu:NumberInput Grid.Row="4" Grid.Column="3" Minimum="0.1" Maximum="1.0" MaxHeight="350" Margin="5"
-                Value="{Binding Value, ElementName=NoiseScaleSlider}" CornerRadius="3"/>
+                Value="{Binding Value, ElementName=NoiseScaleSlider, Mode=TwoWay}" CornerRadius="3"/>
         <Slider Grid.Row="4" Grid.Column="2" x:Name="NoiseScaleSlider" Minimum="0.1" Maximum="1.0" Value="0.6" VerticalAlignment="Center"
                 Background="{DynamicResource DARKPrimaryLighter}" SmallChange="0.1"
                 pu:SliderHelper.CoveredBackground="{DynamicResource DARKPrimaryDarker}" />
 
         <pu:NumberInput Grid.Row="5" Grid.Column="3" Minimum="0.1" Maximum="1.0" MaxHeight="350" Margin="5"
-                Value="{Binding Value, ElementName=NoiseScaleWSlider}" CornerRadius="3"/>
+                Value="{Binding Value, ElementName=NoiseScaleWSlider, Mode=TwoWay}" CornerRadius="3"/>
         <Slider Grid.Row="5" Grid.Column="2" x:Name="NoiseScaleWSlider" Minimum="0.1" Maximum="1.0" Value="0.668" VerticalAlignment="Center"
                 Background="{DynamicResource DARKPrimaryLighter}" SmallChange="0.1"
                 pu:SliderHelper.CoveredBackground="{DynamicResource DARKPrimaryDarker}" />
 
         <pu:NumberInput Grid.Row="6" Grid.Column="3" Minimum="0.1" Maximum="2.0" MaxHeight="350" Margin="5"
-                Value="{Binding Value, ElementName=LengthScaleSilder}" CornerRadius="3"/>
+                Value="{Binding Value, ElementName=LengthScaleSilder, Mode=TwoWay}" CornerRadius="3"/>
         <Slider Grid.Row="6" Grid.Column="2" x:Name="LengthScaleSilder" Minimum="0.1" Maximum="2.0" Value="1.1" VerticalAlignment="Center"
                 Background="{DynamicResource DARKPrimaryLighter}" SmallChange="0.1"
                 pu:SliderHelper.CoveredBackground="{DynamicResource DARKPrimaryDarker}" />
 
-        <ComboBox x:Name="Language" Grid.Row="2" Grid.Column="2" Style="{DynamicResource StandardComboBoxStyle}"
+        <ComboBox x:Name="Languages" Grid.Row="2" Grid.Column="2" Style="{DynamicResource StandardComboBoxStyle}"
                 FontSize="16" Margin="5">
             <System:String>中文</System:String>
             <System:String>日语</System:String>
@@ -882,8 +884,21 @@
         <Button pu:ButtonHelper.CornerRadius="4" Content="{ll:Str 保存设置}" Background="{DynamicResource SecondaryLight}"
                 BorderBrush="{DynamicResource SecondaryDark}" BorderThickness="2" Grid.Row="7" Margin="5,5,5,5"
                 Grid.ColumnSpan="3" Click="Save_Click" />
-        <Button x:Name="Test" pu:ButtonHelper.CornerRadius="4" Visibility="Hidden" Content="{ll:Str 测试}"
+        <ComboBox x:Name="TextSelector" Grid.Row="8" Grid.Column="2" Style="{DynamicResource StandardComboBoxStyle}"
+                FontSize="16" Margin="5" IsEditable="True">
+            <System:String>这是一条测试音频</System:String>
+            <System:String>萌娘百科，万物皆可萌的百科全书！</System:String>
+            <System:String>这颗星球正在沉没——
+海平面因不明原因急速上升，海洋吞没了大部分沿海地区，如今也在不断蚕食着陆地。
+人类的栖息地被迫收缩，处于巅峰时期的科学技术不断流失。
+这是逐渐迈向灭亡的平静时代。</System:String>
+            <System:String>これはオーディオのテストピースです</System:String>
+            <System:String>そしてコミカライズは、コンプティーク2022年11月号（10月7日発売）より連載開始！じゃこ先生による漫画で描かれるATRIの世界をお楽しみに！</System:String>
+            <System:String>孤独な心を抱える少年とロボットの少女が出会う一夏の青春を、情緒溢れる演出・脚本で高く評価された『やがて君になる』の監督・加藤誠×脚本・花田十輝が再びタッグを組み映像化に挑みます。アニメーション制作は美麗な色彩と高度な撮影技術に定評のあるTROYCAが担当！</System:String>
+            <System:String>[ZH]这是一条测试音频[ZH][JA]これはオーディオのテストピースです[JA]</System:String>
+        </ComboBox>
+        <Button x:Name="TestBtn" pu:ButtonHelper.CornerRadius="4" Content="{ll:Str 测试}"
                 Background="{DynamicResource SecondaryLight}" BorderBrush="{DynamicResource SecondaryDark}"
-                BorderThickness="2" Grid.Row="7" Margin="5,5,5,5" Grid.ColumnSpan="1" Click="Test_Click" Grid.Column="3" />
+                BorderThickness="2" Grid.Row="8" Margin="5,5,5,5" Grid.ColumnSpan="1" Click="Test_Click" Grid.Column="3" />
     </Grid>
 </Window>
